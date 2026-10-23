@@ -1,0 +1,6 @@
+PanoUAV-Track GitHub Pages publish copy
+30 sequences / 6456 JPG frames / 633.2 MiB total
+JPEG max width 1280px, quality 70. Original metadata and GT coordinates preserved.
+Use GitHub Pages over HTTPS; do not double-click this copy for file://.
+Publish the entire folder contents from the repository root (main branch).
+Offline versions remain in the ORIGINAL directory.

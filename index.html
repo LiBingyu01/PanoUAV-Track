@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="PanoUAV-Track — Full-Spherical UAV Visual Tracking in the Wild. A full-viewport video wall featuring 27 visible panoramic UAV sequences across daylight, nighttime and simulation.">
+  <title>PanoUAV-Track — Full-Spherical UAV Visual Tracking</title>
+  <link rel="stylesheet" href="styles.css?v=forward-20261023">
+</head>
+<body>
+  <main>
+    <!-- Full-viewport 3×3 panorama mosaic. Three environments, nine visible videos per screen. -->
+    <section class="hero" id="top" aria-label="PanoUAV-Track full-screen video wall" data-cycle-ms="5000">
+      <div class="hero-viewport" id="mosaicViewport" tabindex="0" aria-label="Full-screen video wall: three columns, three rows. Use left and right arrow keys or swipe to switch between Daylight, Nighttime and Simulation.">
+        <div class="showcase-track" id="mosaicTrack">
+          <div class="hero-loading">Preparing panoramic video gallery…</div>
+        </div>
+      </div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-title" aria-hidden="true">
+        <h1>PanoUAV-Track<span class="hero-period">.</span></h1>
+      </div>
+      <nav class="hero-navigation" aria-label="Video wall environments">
+        <button class="hero-arrow" id="slidePrev" type="button" aria-label="Previous environment">←</button>
+        <div class="environment-tabs" role="tablist" aria-label="Video environments">
+          <button type="button" class="environment-tab is-active" data-slide="0" role="tab" aria-selected="true">Light</button>
+          <button type="button" class="environment-tab" data-slide="1" role="tab" aria-selected="false">Night</button>
+          <button type="button" class="environment-tab" data-slide="2" role="tab" aria-selected="false">Simulation</button>
+        </div>
+        <button class="hero-arrow" id="slideNext" type="button" aria-label="Next environment">→</button>
+      </nav>
+      <div id="galleryStatus" class="gallery-status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="paper-intro" aria-labelledby="paper-title">
+      <h2 id="paper-title">PanoUAV-Track: Full-Spherical UAV Visual Tracking in the Wild</h2>
+      <div class="authors" aria-label="Authors">
+        <span>Bingyu Li<sup>1</sup></span><span>Lichang Yang<sup>2</sup></span><span>Xin Qiao<sup>2</sup></span>
+        <span>Wu Du<sup>2</sup></span><span>Zheyu Cao<sup>2</sup></span><span>Zhiyuan Zhao<sup>3</sup></span>
+        <span>Junyu Gao<sup>2</sup></span><span>Xuelong Li<sup>3</sup></span>
+      </div>
+      <p class="affiliations"><sup>1</sup> University of Science and Technology of China &nbsp; · &nbsp; <sup>2</sup> Northwestern Polytechnical University<br><sup>3</sup> China Telecom Artificial Intelligence Research Institute (TeleAI)</p>
+      <div class="paper-links"><a href="assets/PanoUAV-Track-paper.pdf" target="_blank" rel="noopener">▤ &nbsp; Paper</a><a href="https://github.com/LiBingyu01/PanoUAV-Track" target="_blank" rel="noopener">⌘ &nbsp; Code</a><a href="#top">◎ &nbsp; Demos</a></div>
+    </section>
+
+    <section class="about" id="about">
+      <h2>About the benchmark</h2>
+      <p>PanoUAV-Track is a benchmark for full-spherical UAV visual tracking, comprising 1,895 sequences, 507,961 frames and 2,872 annotated objects across real-world daylight, nighttime and simulation. We also introduce PUTrack, a geometry-aware tracking framework for latitude-dependent distortion and ERP seam discontinuity.</p>
+      <div class="about-stats" aria-label="Benchmark statistics"><div><b>1,895</b><span>Sequences</span></div><div><b>507,961</b><span>Frames</span></div><div><b>2,872</b><span>Objects</span></div><div><b>360° × 180°</b><span>ERP field of view</span></div></div>
+    </section>
+    <section class="citation" id="citation">
+      <h2>Citation</h2>
+      <pre id="bibtex">@article{li_panouavtrack,
+  title  = {PanoUAV-Track: Full-Spherical UAV Visual Tracking in the Wild},
+  author = {Li, Bingyu and Yang, Lichang and Qiao, Xin and Du, Wu and Cao, Zheyu and Zhao, Zhiyuan and Gao, Junyu and Li, Xuelong}
+}</pre>
+      <button id="copyCitation" class="copy-cite" type="button">Copy BibTeX</button><span id="citationFeedback" class="citation-feedback" aria-live="polite"></span>
+    </section>
+    <footer class="footer">PanoUAV-Track · Full-Spherical UAV Visual Tracking</footer>
+  </main>
+
+  <!-- Offline 360 viewer: generated data-URL JPG frames + exact ground-truth boxes. -->
+  <div class="pano-modal" id="panoModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="panoModalTitle">
+    <div class="pano-modal-shell">
+      <header class="pano-modal-head">
+        <div class="pano-modal-heading"><h2 id="panoModalTitle">Explore 360°</h2><p id="panoModalSub">Drag to explore · scroll to zoom</p></div>
+        <div class="pano-modal-head-actions"><span id="panoModalDomain" class="pano-modal-domain">ERP 360°</span><button type="button" class="modal-circle" id="panoFullScreen" title="Fullscreen" aria-label="Fullscreen">⛶</button><button type="button" class="modal-circle modal-close" id="panoClose" title="Close viewer" aria-label="Close viewer">×</button></div>
+      </header>
+      <div class="pano-modal-stage" id="panoModalStage">
+        <canvas id="panoCanvas" aria-label="GPU-rendered 360-degree panorama. Drag to rotate."></canvas>
+        <canvas id="panoCpuCanvas" aria-label="Compatible 360-degree panorama renderer. Drag to rotate."></canvas>
+        <canvas id="panoErpCanvas" aria-label="Original ERP JPG frame with ground-truth overlays"></canvas>
+        <video id="panoSource" hidden playsinline muted preload="none"></video>
+        <!-- ERP-only forward perspective inset: center longitude of the current ERP frame. -->
+        <button type="button" class="pano-forward-inset" id="panoForwardInset"
+                title="查看前向90°透视视角（点击进入沉浸模式）"
+                aria-label="前向90度视角，点击进入沉浸式视图">
+          <canvas id="panoForwardCanvas" width="320" height="180" aria-hidden="true"></canvas>
+          <span class="pano-forward-header">FORWARD VIEW <small>90° HFOV</small></span>
+          <span class="pano-forward-footer">PERSPECTIVE <span aria-hidden="true">↗</span></span>
+          <span class="pano-forward-unavailable" id="panoForwardUnavailable" hidden>前向视角暂不可用</span>
+        </button>
+        <div class="pano-orientation" aria-hidden="true"><span id="panoYaw">AZ 000°</span><span id="panoPitch">EL +00°</span><span id="panoFov">FOV 90°</span></div>
+        <!-- Subtle onboarding cue: immersive / sphere only; auto fades after 3 s. -->
+        <div class="pano-drag-hint" id="panoDragHint" aria-hidden="true">
+          <span class="pano-hint-arrow pano-hint-arrow-left">←</span>
+          <span class="pano-hint-text">
+            <span>拖动 / 滑动探索 360°</span>
+            <small>DRAG TO EXPLORE</small>
+          </span>
+          <span class="pano-hint-arrow pano-hint-arrow-right">→</span>
+        </div>
+        <div class="pano-modal-error" id="panoError" hidden></div>
+      </div>
+      <div class="pano-modal-controls">
+        <div class="pano-controls-left"><button type="button" id="panoPlay" class="pano-action-play" aria-label="Pause">Ⅱ</button><span id="panoTime" class="pano-time">00:00 / 00:00</span></div>
+        <input id="panoSeek" class="pano-seek" type="range" min="0" max="1000" value="0" aria-label="Video progress">
+        <div class="pano-controls-right"><button type="button" class="pano-mode is-active" data-view="immersive">Immersive</button><button type="button" class="pano-mode" data-view="globe">Sphere</button><button type="button" class="pano-mode" data-view="erp">ERP</button><button type="button" id="panoBoxes" class="pano-toggle" title="Toggle ground truth" aria-pressed="true">GT</button><button type="button" id="panoReset" class="pano-reset" title="Reset orientation">↺</button></div>
+      </div>
+      <div class="pano-modal-footer"><span>DRAG TO ROTATE · SCROLL TO ZOOM · ESC TO CLOSE</span><span id="panoFrame">FRAME —</span></div>
+    </div>
+  </div>
+  <!-- JS data files work from file:// whereas fetch(JSON) is blocked by Chrome. -->
+  <script src="assets/gallery/frames-manifest.js" defer></script>
+  <script src="assets/gallery/frames-annotations.bundle.js" defer></script>
+  <script src="assets/gallery/gallery-data.js" defer></script>
+  <script src="app.js?v=forward-20261023" defer></script>
+  <script src="landing.js?v=offline-20261023" defer></script>
+</body>
+</html>
